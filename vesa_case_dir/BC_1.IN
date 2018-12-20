@@ -1,0 +1,13 @@
+25000 200 125 1 1
+0
+
+650  (nbcnodes)
+0.0d0 1020d0
+
+0
+0.d0  (sat on bc)
+0.d0  (satin)
+
+1 0  (nflux,nschedule)
+32 33 62 63 1 1  31.71d0 320.d0
+

@@ -1,0 +1,295 @@
+\documentclass[11pt,a4paper]{amsart}
+\usepackage[numbers]{natbib}
+\usepackage{stix}
+\usepackage{siunitx}
+\usepackage{booktabs}
+\usepackage{overpic}
+\usepackage{xspace}
+\input{../macros/macros.tex}
+\newenvironment{ovpc}[2]{\begin{overpic}[width=#1\textwidth]{../fig/#2}}{\end{overpic}}
+\begin{document}
+\title{Variogram}
+\date{\today}
+\maketitle
+\section{Introduction}
+\label{sec:introduction}
+Assume we want to model a reservoir top surface. As a starting point for the
+model, we assume that the depth (i.e. the negative $z$-coordinate assuming
+$z=0$ corresponds to sea level) of the top surface of the reservoir is
+given as
+\begin{align}
+  \label{eq:17}
+  \heightTop(\boldsymbol{x}) = \heightTopBase(\boldsymbol{x})
+  + \heightRandomReal(\boldsymbol{x})
+\end{align}
+here $\boldsymbol{x} = (x, y)$ is a point in the $xy$-plane, and
+where $\heightRandomReal(\boldsymbol{x})$ is a realization of a random field
+$\heightRandom(\boldsymbol{x})$ with a mean of zero at any point and a
+standard deviation that is much smaller than the reservoir thickness
+$\reservoirThickness(\boldsymbol{x})$.
+Also, note the bottom surface of the reservoir is now given by
+\begin{align}
+  \label{eq:8}
+  \heightBottom(\boldsymbol{x}) = \heightTop(\boldsymbol{x})
+  - \reservoirThickness(\boldsymbol{x})
+\end{align}
+Hence, $\heightRandom(\boldsymbol{x})$
+is used to add some randomness to the top surfaces.
+We now consider how to model the random field $\heightRandom(\boldsymbol{x})$.
+The domain is discretized into points $\domainPoint_i$, $i=1, \ldots,
+\numDomainPoints$, and 
+we consider the random variables $\heightRandom_i = \heightRandom(\domainPoint_i)$.
+
+The collection of random variables $\{ \heightRandom_i
+\}_{i=1}^{\numDomainPoints}$ is called a 
+random vector. 
+A random vector is called stationary if the probability  
+distribution of each component is the same.
+
+\section{Variogram and covariance}
+The definition of the theoretical variogram, \variogram{}, is based on
+regionalized random variables $\randVarZ(\boldsymbol{x})$ and
+$\randVarZ(\boldsymbol{x}+\boldsymbol{h})$, 
+where $\boldsymbol{x}$ and $\boldsymbol{x}+\boldsymbol{h}$ represent the
+spatial positions separated by a vector $\boldsymbol{h}$ \cite{bac11:var}
+ \begin{align}
+   \label{eq:1}
+   \variogram(\boldsymbol{h}) = \frac{1}{2}\expectedValue
+   \left[
+   \left[
+   \randVarZ(\boldsymbol{x}+\boldsymbol{h}) - \randVarZ(\boldsymbol{x})
+   \right]^2
+   \right] = \frac{1}{2} \varianceFunc
+   \left[
+   \randVarZ(\boldsymbol{x}+\boldsymbol{h}) - \randVarZ(\boldsymbol{x})
+   \right]
+ \end{align}
+Here, $\randVarZ(\boldsymbol{x})$ and $\randVarZ(\boldsymbol{x} + \boldsymbol{h})$
+ denote random variables, and $\expectedValue[\cdot]$ denotes the expected
+ value, and
+the variance $\varianceFunc(\randVarZ(\boldsymbol{x}))$ is defined as
+ \begin{align}
+   \label{eq:10}
+   \varianceFunc(\randVarZ(\boldsymbol{x}))= \expectedValue
+   \left[
+   \left(
+   \randVarZ(\boldsymbol{x}) - \expectedValue
+   \left[
+   \randVarZ(\boldsymbol{x})
+   \right]
+   \right)^2
+   \right]
+ \end{align}
+
+ Further, the covariance between the random variables $\randVarZ(\boldsymbol{x})$ and
+$\randVarZ(\boldsymbol{x} + \boldsymbol{h})$ is defined as the expected value
+of the product of their deviations from their individual expected values
+\begin{multline}
+  \label{eq:9}
+  \covarianceFuncXY (\randVarZ(\boldsymbol{x}),\randVarZ(\boldsymbol{x} +
+  \boldsymbol{h}))=\\
+  \expectedValue
+  \left[
+    \left\{
+  \randVarZ(\boldsymbol{x}) - \expectedValue
+  \left[
+  \randVarZ(\boldsymbol{x})
+  \right]
+\right\} \times
+    \left\{
+   \randVarZ(\boldsymbol{x} + \boldsymbol{h}) - \expectedValue
+  \left[
+  \randVarZ(\boldsymbol{x} + \boldsymbol{h})
+  \right]
+\right\}
+  \right]
+\end{multline}
+
+If the first two moments of the variable $\randVarZ$ are invariant under
+translation, it is called second order stationary \cite{chi12:geo}. In this
+case, the mean is constant and the covariance function only depends on the
+separation $\boldsymbol{h}$.
+
+It follows from the variance addition theorem \cite{pap91:pro} that
+\begin{multline}
+  \label{eq:3}
+  \varianceFunc
+   \left[
+   \randVarZ(\boldsymbol{x}+\boldsymbol{h}) - \randVarZ(\boldsymbol{x})
+   \right]
+  =\\
+   \varianceFunc
+   \left[
+   \randVarZ(\boldsymbol{x}+\boldsymbol{h})
+  \right] +
+     \varianceFunc
+   \left[
+   \randVarZ(\boldsymbol{x})
+  \right] - 2 \covarianceFuncXY 
+  \left[
+  \randVarZ(\boldsymbol{x}+\boldsymbol{h}), \randVarZ(\boldsymbol{x})
+  \right],
+\end{multline}
+and since the variance is independent of the position, this is equal to
+\begin{align}
+  \label{eq:4}
+  2 \varianceFunc
+   \left[
+   \randVarZ(\boldsymbol{x})
+  \right] - 2\covarianceFuncXY 
+  \left[
+  \randVarZ(\boldsymbol{x}+\boldsymbol{h}), \randVarZ(\boldsymbol{x})
+  \right],
+\end{align}
+
+Let us define
+\begin{align}
+  \label{eq:5}
+  \variance = \varianceFunc
+  \left[
+  \randVarZ(\boldsymbol{x})
+  \right]
+\end{align}
+and and since covariance is independent of position we also define
+\begin{align}
+  \label{eq:6}
+  \covarianceFuncH(\boldsymbol{h}) = \covarianceFuncXY
+  \left[
+  \randVarZ(\boldsymbol{x}+\boldsymbol{h}), \randVarZ(\boldsymbol{x})
+  \right],
+\end{align}
+Using \eqref{eq:1}, \eqref{eq:3}, and \eqref{eq:4}, we thus have
+\begin{align}
+  \label{eq:7}
+  \variogram(\boldsymbol{h}) = \variance -  \covarianceFuncH(\boldsymbol{h})
+\end{align}
+Here, $\variance$ is identical with the sill of the variogram.
+The sill is the limit of $\variogram(\boldsymbol{h})$
+for $\|\boldsymbol{h}\| \rightarrow \infty$
+so that the covariance function tends to zero.
+
+If furthermore the covariance function $\covarianceFuncH(\boldsymbol{h})$
+only depends on the length $\|\boldsymbol{h}\|$ 
+of the vector $\boldsymbol{h}$ and not on its orientation, we have
+\begin{align}
+  \label{eq:15}
+  \variogram(h) &= \variance -  \covarianceFuncH(h), \qquad \text{or}\\
+  \label{eq:8}
+  \covarianceFuncH(h) &= \variance -  \variogram(h)
+\end{align}
+\section{Covariance model}
+We compare some covariance models for $h\geq 0$.
+The value of the distance $h$ where the model first flattens out (and become
+zero) is known as the range $\range$.
+
+\subsection{Model 1: $\sin x/x$}
+The model is given by
+\begin{align}
+  \label{eq:2}
+  \covarianceFuncH_1(h) =
+  \begin{cases}
+    \variance & h = 0,\\
+    \variance\frac{\sin (\pi h )/ \range}{(\pi h)/\range}, & 0 < h < \range,\\
+    0, & h \geq \range
+  \end{cases}
+\end{align}
+%Note: that the covariance function becomes zero at its range,
+%i.e. $\covarianceFuncH(\range) = 0$.
+Note that this function is probably not (how to prove this?) a covariance function
+as defined in \cite{chi12:geo}. Numerical test has also shown that in some cases
+the resulting covariance matrix is not positive definite.
+
+\subsection{Model 2:  spherical}
+The model is given by \cite{chi12:geo}
+\begin{align}
+  \label{eq:11}
+  \covarianceFuncH_2(h) =
+  \begin{cases}
+    \variance \left(1 - \frac{3h}{2\range} - \frac{h^3}{2\range^3}\right), &h<\range\\
+    0, & h\geq\range
+  \end{cases}
+\end{align}
+\subsection{Model 3: triangular}
+The model is given by 
+\begin{align}
+  \label{eq:12}
+  \covarianceFuncH_3(h) =
+  \begin{cases}
+    \variance \left(1 - \frac{h}{\range}\right), &h<\range\\
+    0, & h\geq\range
+  \end{cases}
+\end{align}
+\subsection{Model 4: exponential}
+The model is given by 
+\begin{align}
+  \label{eq:13}
+  \covarianceFuncH_4(h) =
+    \variance \exp(-\frac{8h}{\range}), \qquad h\geq 0
+\end{align}
+Note that the variogram is not zero at $h \geq \range$. We have
+\begin{align}
+  \label{eq:16}
+  \covarianceFuncH_4(\range) = \variance e^{-8}\approx \variance (3.354 \times 10^{-4})
+\end{align}
+\subsection{Comparison of the models}
+The models are compared in Figure \ref{fig:cov}.
+\begin{figure}
+  \centering
+  \begin{ovpc}{.8}{variogram/covariance_cmp.png}
+  \end{ovpc}
+  \caption{Comparison of the four models, using a range of $\range = 20$ and a
+    variance of $\variance = 46.667^2 \approx 2177.8$ }
+  \label{fig:cov}
+\end{figure}
+\section{Generation of the covariance matrix}
+First we define the distances
+\begin{align}
+  \label{eq:13}
+  \distance_{ij} = \| \domainPoint_i - \domainPoint_j \|, \qquad
+  i=1,\ldots, \numDomainPoints, \quad j=1,\ldots,\numDomainPoints,
+\end{align}
+where $\domainPoint_i$ is a node (discrete point) in the solution domain as
+described in Section \ref{sec:introduction}.
+Now define the $\numDomainPoints \times \numDomainPoints$ distance matrix
+\begin{align}
+  \label{eq:14}
+  \distMatrix = \{ \distance_{ij} \}_{i=1,\ldots,\numDomainPoints, \; j=1,
+  \ldots, \numDomainPoints}.
+\end{align}
+Then the covariance matrix is given by
+\begin{align}
+  \label{eq:12}
+  \covMatrix = \{ \covarianceFuncH(\distance_{ij})
+  \}_{i=1,\ldots,\numDomainPoints, \; j=1,  
+  \ldots, \numDomainPoints}.
+,
+\end{align}
+where $\covarianceFuncH(\cdot)$ is the covariance function as defined in
+Equation \eqref{eq:8}.
+\section{Coordinate transformations}
+A different covariance range $\range$ in the $x$ and $y$ direction can be
+incorporated in the covariance matrix in \eqref{eq:12} by scaling e.g. the $y$
+coordinate before computing the distances in \eqref{eq:13}.
+
+\bibliographystyle{plain}
+\begin{thebibliography}{1}
+
+\bibitem{bac11:var}
+M.~Bachmaier and M.~Backes.
+\newblock Variogram or semivariogram? variance or semivariance? allan variance
+  or introducing a new term?
+\newblock {\em Math. Geosci.}, 43:735--740, 2011.
+
+\bibitem{chi12:geo}
+J.-P. Chil{\`{e}}s and P.~Delfiner.
+\newblock {\em {Geostatistics : Modeling Spatial Uncertainty}}.
+\newblock Wiley, 2012.
+
+\bibitem{pap91:pro}
+A.~Papoulis.
+\newblock {\em Probability, random variables, and stochastic processes}.
+\newblock McGraw-Hill, third edition, 1991.
+
+\end{thebibliography}
+
+\end{document}

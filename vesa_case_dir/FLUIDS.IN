@@ -1,0 +1,9 @@
+1020.d0  700.d0  6.9d-4   6.d-5   (denw,deng,viscow,viscog)
+0.11d0 0.21d0 0.54d0 0.75d0 0.0d0 0.d0
+0.2d5 .66d0 0.0d0
+0.0d0  0.0d0  9.81d0  
+4.6d-10 4.8d-10 1d-10 0 0
+0.d0 1.d0
+1.d0 0.d0 0.0d0 1.d0    	(frac_gmass_c,frac_gmass_b,frac_wmass_c,frac_wmass_b)
+1
+

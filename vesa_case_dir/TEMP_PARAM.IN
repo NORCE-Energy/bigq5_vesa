@@ -1,0 +1,10 @@
+310.15d0 0.d0  !surface temp, geothermal Gradient
+750.d0 2650.d0 0.9473d0 !rock heat capacity, density, conductivity
+0 !0=isothermal, 1=non-isothermal
+1.d0 ! 1d-1 ! conductivity factor used in coupling between phase temperatures
+
+
+
+
+
+

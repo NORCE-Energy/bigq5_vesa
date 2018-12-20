@@ -1,0 +1,101 @@
+\documentclass[11pt,a4paper]{amsart}
+\usepackage[numbers]{natbib}
+\usepackage{stix}
+\usepackage{siunitx}
+\usepackage{booktabs}
+\usepackage{overpic}
+\usepackage{xspace}
+\input{../macros/macros.tex}
+\newcommand{\mMatrix}{\ensuremath{\boldsymbol{M}}}
+\newcommand{\numSamples}{\ensuremath{n}}
+\newcommand{\xVar}{\ensuremath{\tilde{x}}}
+\newcommand{\xVec}{\ensuremath{\tilde{\boldsymbol{x}}}}
+\newenvironment{ovpc}[2]{\begin{overpic}[width=#1\textwidth]{../fig/#2}}{\end{overpic}}
+\begin{document}
+\title{Cholesky factorization for generating correlated variables}
+\date{\today}
+\maketitle
+\section{Introduction}
+The Cholesky decomposition is commonly used in geostatistical reservoir modelling for
+generating realizations of spatially correlated random variables.
+
+For a real positive definite matrix $\mMatrix$, the Cholesky decomposition is
+the product of a lower triangular matrix $\cholMatrix$ and its
+transpose, i.e.: $\mMatrix = \cholMatrix\cholMatrix^T$, \cite{gol96:mat}.
+
+In our application to geostatistics, we assume we are given a
+$\numSamples\times \numSamples$ covariance matrix
+$\covMatrix$ generated from a variogram model of a secondary stationary random
+field and an isotropic covariance function.
+Here, $\numSamples$ is the number of
+sampling points points. A valid variogram model will give a
+positive definite $\covMatrix$ \cite{chi12:geo},
+hence it will always be possible to determine a lower triangular
+$\numSamples\times \numSamples$ matrix $\cholMatrix{}$ such that
+\begin{align}
+  \label{eq:6}
+  \covMatrix = \cholMatrix \cholMatrixT. 
+\end{align}
+
+A widely used method for sampling a $\numSamples \times 1$ vector
+from the multivariate normal distribution with mean $\mean$
+  and covariance matrix $\covMatrix$ works as follows \cite{gen09:com}:
+
+Consider a random $\numSamples\times 1$ vector $\xVec$ 
+consisting of uncorrelated random variables
+from the standard normal distribution, such that each random variable
+$\xVar_i$, $i = 1, \ldots, \numSamples$, of $\xVec$
+has a zero mean and a unit variance.
+
+It follows that the expected value of any pairs of these variables is
+\begin{align}
+  \label{eq:3}
+  \expectedValue(\xVar_i\xVar_j)=\delta_{ij},
+\end{align}
+where $\delta_{ij}$ is the Kronecker delta,
+and hence the covariance matrix of $\xVec$ is the identity matrix
+\begin{align}
+  \label{eq:4}
+  \expectedValue(\xVec\xVec^T) = \identityMatrix
+\end{align}
+
+Now define a new random vector $\randVecz = \mean+\cholMatrix \xVec$ and observe
+that the covariance 
+matrix of $\randVecz - \mean$ is given by
+\begin{multline}
+  \label{eq:5}
+  %\expectedValue(\randVecz\randVecz^T) =
+  \expectedValue((\cholMatrix \xVec)(\cholMatrix \xVec)^T) =
+  \expectedValue(\cholMatrix \xVec\xVec^T\cholMatrix^T) =
+  \cholMatrix\expectedValue(\xVec\xVec^T)\cholMatrix^T = 
+  \cholMatrix \identityMatrix \cholMatrix^T = 
+  \cholMatrix \cholMatrix^T = \covMatrix 
+\end{multline}
+So we have now a random vector $\randVecz$ that is normal distributed with
+mean $\mean$ and covariance as given by $\covMatrix$. To sample from this vector,
+we simply draw a sample from $\xVec$ and multiply the sample vector on the
+left by $\cholMatrix$.
+
+
+\bibliographystyle{plain}
+\begin{thebibliography}{1}
+
+\bibitem{chi12:geo}
+J.-P. Chil{\`{e}}s and P.~Delfiner.
+\newblock {\em {Geostatistics : Modeling Spatial Uncertainty}}.
+\newblock Wiley, 2012.
+
+\bibitem{gen09:com}
+J.E. Gentle.
+\newblock {\em Computational statistics}.
+\newblock Springer, 2009.
+
+\bibitem{gol96:mat}
+G.H. Golub and C.F. Van~Loan.
+\newblock {\em Matrix computations}.
+\newblock Johns Hopkins studies in the mathematical sciences vol. 3. Johns
+  Hopkins University Press, Baltimore, third edition, 1996.
+
+\end{thebibliography}
+
+\end{document}

@@ -1,0 +1,260 @@
+\documentclass[11pt,a4paper]{amsart}
+\usepackage[numbers]{natbib}
+\usepackage{stix}
+\usepackage{siunitx}
+\usepackage{booktabs}
+\usepackage{overpic}
+\usepackage{url}
+\urlstyle{sf}
+\usepackage{xspace}
+\usepackage{xcolor}
+\usepackage{listings}
+\lstset{basicstyle=\ttfamily,
+  showstringspaces=false,
+  commentstyle=\color{red},
+  keywordstyle=\color{blue}
+}
+\colorlet{punct}{red!60!black}
+\definecolor{background}{HTML}{EEEEEE}
+\definecolor{delim}{RGB}{20,105,176}
+\colorlet{numb}{magenta!60!black}
+\lstdefinelanguage{json}{
+    basicstyle=\normalfont\ttfamily,
+    numbers=left,
+    numberstyle=\scriptsize,
+    stepnumber=1,
+    numbersep=8pt,
+    showstringspaces=false,
+    breaklines=true,
+    frame=lines,
+    backgroundcolor=\color{background},
+    literate=
+     *{0}{{{\color{numb}0}}}{1}
+      {1}{{{\color{numb}1}}}{1}
+      {2}{{{\color{numb}2}}}{1}
+      {3}{{{\color{numb}3}}}{1}
+      {4}{{{\color{numb}4}}}{1}
+      {5}{{{\color{numb}5}}}{1}
+      {6}{{{\color{numb}6}}}{1}
+      {7}{{{\color{numb}7}}}{1}
+      {8}{{{\color{numb}8}}}{1}
+      {9}{{{\color{numb}9}}}{1}
+      {:}{{{\color{punct}{:}}}}{1}
+      {,}{{{\color{punct}{,}}}}{1}
+      {\{}{{{\color{delim}{\{}}}}{1}
+      {\}}{{{\color{delim}{\}}}}}{1}
+      {[}{{{\color{delim}{[}}}}{1}
+      {]}{{{\color{delim}{]}}}}{1},
+}
+\input{../macros/macros.tex}
+\newenvironment{ovpc}[2]{\begin{overpic}[width=#1\textwidth]{../fig/#2}}{\end{overpic}}
+\begin{document}
+\title{Python script to generate top-surfaces to be used with the VESA simulator}
+\date{\today}
+\maketitle
+\section{Introduction}
+\label{sec:introduction}
+In reservoir simulation, the traditional approach to study the impact of
+geology on fluid migration is 
+to create multiple realizations of a geostatistical model and then run a
+forward simulator on each realization. An alternative approach is to use a
+machine learning method. Here, a ``prediction tool'' is generated after an initial
+training session on sample data. After the training, the tool can be
+used to predict the outcome of, e.g., \cotwo{} migration without having to run
+a traditional reservoir simulator (which should improve the efficiency of prediction).
+
+In this study, we consider how the top surface morphology of the
+reservoir can impact storage capacity \cite{nil12:imp} of \cotwo{}.
+A statistical model for generating top surfaces of a
+reservoir is developed. Sampling from this random field provides 
+realizations that can be used as input for the VESA simulator
+\cite{gas09:ver} to produce breakthrough curves. In this way, we obtain a
+mapping between the parameters used in the statistical model of the top
+surface and the corresponding
+breakthrough curves, providing training data the machine learning algorithm.
+
+The main focus of this documentation is to describe how to generate the top
+surfaces. It also briefly mention how to run the VESA simulator.
+It does not describe the actual machine learning procedure. 
+
+\section{Documentation}
+This document \docMain{} gives an overview of the main Python script,
+further documentation is available in the \docsFolder{} folder:  
+\begin{itemize}
+\item \docSetup {} : describes the top surface model and its parameters in
+  more detail, 
+\item \docVariogram{} : describes the model for the covariance function,
+\item \docCholesky{} : a short note on how the Cholesky factorization is used
+  to help generate samples from the random field.
+\end{itemize}
+\section{Prerequisites}
+\subsection{Python installation}
+The script uses Python version 3.
+%The minimum version supported is version
+%3.3, due to the usage of module \pythonModule{shutil}.
+The following non-standard Python
+packages (which should be straightforward to install with the \pythonPip{} 
+\cite{pyt18:pip} command) are used:
+\begin{itemize}
+\item \hltexttt{jsoncomment}
+\item \hltexttt{numpy}
+\end{itemize}
+\subsection{VESA simulator}
+The VESA simulator can be downloaded from GitHub at
+
+\[ \text{\vesaGitHub{}} \]
+
+To install it, you can try
+\begin{lstlisting}[language=bash]
+$ git clone https://github.com/NORCE-Energy/vesa.git
+$ cd vesa
+$ ./configure
+$ make
+\end{lstlisting}
+
+
+\section{Scripts and modules}
+The Python scripts and modules are located in the folder \hltexttt{python}:
+\begin{itemize}
+\item \mainScriptKJ{} : This is the main script to be used as a component in the
+  Machine learning algorithm.
+\item The part of the code that generates a single realization has been
+  separated out into a Python module \pythonModule{norce.bigq5}. The file of
+  this module is located in folder \hltexttt{python/norce/bigq5.py}.
+\item \jsonInputParamFile{} : Some parameters to the main script
+  \mainScriptKJ{} are given at the command line, and the rest of the
+  parameters are given in the JSON file \jsonInputParamFile{}, see below.
+\end{itemize}
+
+\section{Main script}
+The general command line syntax for calling the main Python script\\
+\mainScriptKJ{} is:
+\begin{lstlisting}[language=bash,basicstyle=\scriptsize]
+$ gen_vesa_input_file.py <range_x> <range_y> <requested_delta_h>
+\end{lstlisting}
+where the leading \hltexttt{\$} indicates a Shell prompt, and
+\begin{itemize}
+\item \rangeX{}, is $x$-range of the variogram,
+\item \rangeY{}, is $y$-range of the variogram,
+\item \paramAmp{}, is the requested height variation (amplitude) of the ridges,
+\end{itemize}
+See the documentation file \docSetup{} for more information about the
+background for the parameters.
+
+For example the following command line:
+\begin{lstlisting}[language=bash]
+$ gen_vesa_input_file.py 5000 40000 50
+\end{lstlisting}
+will generate a realization from the stochastic field. The covariance of
+the field will have a range of 5000 in the $x$-direction and a range of 40000 in
+the $y$-direction. The amplitude of the covariance function is set such that
+we have high confidence (the level of confidence can be set, see discussion
+below) that a sample point drawn from the field will lie in the interval $[-50, 50]$.
+
+\subsection{Fixed parameters}
+The three parameters, \rangeX{}, \rangeY{}, and\\ \paramAmp{}, described in the
+previous section, can be called ``dynamic'' 
+since they can be changed conveniently on the command line, the rest of the
+parameters to the script are given in a JSON file \jsonInputParamFile{} that
+should be located in the same folder as the main script. The content of this
+file is:
+\begin{lstlisting}[language=json,firstnumber=1]
+"domain" : {
+   "curvature" : 0.005,
+   "tilt_angle" : 0.477
+},
+"num_std_dev_confidence_delta_h" : 3, 
+"nx" : 200,
+"ny" : 125,
+"output_dir" : "../vesa_case_dir",
+"reservoir_depth" : 1000,
+"reservoir_thickness" : 100,
+"reservoir_xy_size" : [50000, 25000],
+"variogram" : {
+   "type" : "spherical",
+},
+\end{lstlisting}
+Here,
+\begin{itemize}
+
+\item \jsonParam{domain['curvature']} is the curvature of the domain, see
+  documentation file \docSetup{} for more information. 
+
+\item \jsonParam{domain['tilt\_angle']} is the domain tilt angle, see
+  \docSetup{} for more information. 
+
+\item The parameter \jsonParam{num\_std\_dev\_confidence\_delta\_h} describes
+  the confidence level of the command line parameter \paramAmp{}.
+  Let $N_{\stdev} := \jsonParam{num\_std\_dev\_confidence\_delta\_h}$, then
+  the generated random field is stationary with a standard
+  deviation given by
+  \begin{align*}
+    \sigma = \frac{\paramAmp}{N_{\stdev}}.
+  \end{align*}
+  For example if $N_{\stdev} = 3$, then according to the empirical
+rule \cite{wik18:ers}, there will 99.7\% confidence level that a sampled value
+will lie in the interval $[-\paramAmp, \paramAmp]$.
+
+\item  The parameter \jsonParam{reservoir\_xy\_size} is an array of two
+    elements where the first is the $x$-size (the length) of the reservoir, and the
+    second specifies the $y$-size (the width) of the reservoir.
+
+\item The parameters \jsonParam{nx} and  \jsonParam{ny} specifies the number
+    of grid cells in the $x$- and $y$-directions, respectively. The size of a
+    grid cell $(\Delta x, \Delta y)$ is then
+    \begin{align*}
+      \label{eq:4}
+      \Delta x = (\jsonParam{x\_max} - \jsonParam{x\_min})/ \jsonParam{nx}\\
+      \Delta y = (\jsonParam{y\_max} - \jsonParam{y\_min})/ \jsonParam{ny}
+    \end{align*}
+    and the generated surface heights corresponds to the grid nodes, that is:
+    to the cell centers (not the grid nodes/vertices).
+
+\item \jsonParam{output\_dir} contains the directory name where the output
+  file \vesaInFile{REFHT} (a VESA input file) will be written. The default
+  value (if the parameter 
+  is not given) is 
+  the current directory, ``\hltexttt{.}'' (i.e. a string consisting of a the single
+  dot character). 
+
+\item \jsonParam{reservoir\_depth} specifies the depth (below sea level) of
+  the lowest point of 
+  the bottom surface. This number should be a positive number, although its
+  $z$-coordinate will be its negative value.
+
+\item \jsonParam{reservoir\_thickness} gives the thickness of the reservoir.
+  Note that this value should agree with the value in the VESA input file \vesaInFile{H}.
+
+\item \jsonParam{variogram['type']} the type of variogram to use when
+  generating the covariance matrix, see the documentation file
+  \docVariogram{} for more information.
+
+\end{itemize}
+
+\bibliographystyle{plain}
+\begin{thebibliography}{1}
+
+\bibitem{wik18:ers}
+68–95–99.7 rule.
+\newblock
+  {\url{https://en.wikipedia.org/wiki/68%E2%80%9395%E2%80%9399.7_rule}}.
+
+\bibitem{pyt18:pip}
+Installing packages.
+\newblock {\url{https://packaging.python.org/tutorials/installing-packages}}.
+
+\bibitem{gas09:ver}
+S.E. Gasda, J.M. Nordbotten, and M.A. Celia.
+\newblock Vertical equilibrium with sub-scale analytical methods for geological
+  {CO2} sequestration.
+\newblock {\em Comput. Geosci.}, 13(4):469--481, 2009.
+
+\bibitem{nil12:imp}
+H.M. Nilsen, A.R. Syversveen, K.-A. Lie, J.~Tveranger, and J.M. Nordbotten.
+\newblock Impact of top-surface morphology on {CO2} storage capacity.
+\newblock {\em International Journal of Greenhouse Gas Control}, 11:221--235,
+  2012.
+
+\end{thebibliography}
+
+\end{document}

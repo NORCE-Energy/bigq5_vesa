@@ -1,0 +1,32 @@
+"domain" : {
+   # 0 (= flat) <= curvature <= 1 (= circular)
+   "curvature" : 0.005,
+   # Angle in degrees
+   "tilt_angle" : 0.477
+},
+"num_std_dev_confidence_delta_h" : 3,
+# 200 * 125 = 25000
+# size of cov. matrix: 25000 * 25000 = 625,000,000
+# 625,000,000 * 8 = 5,000,000,000 bytes
+# 5,000,000,000 bytes / 1,073,741,824 (bytes / GB) ~= 4.6566 GB
+"nx" : 200,
+"ny" : 125,
+"output_dir" : "../vesa_case_dir",
+"output_thickness" : false,
+#"range_x" : 5000,
+#"range_y" : 10000,
+#"requested_delta_h" : 50,
+"reservoir_depth" : 1000,
+"reservoir_thickness" : 100,
+"reservoir_xy_size" : [50000, 25000],
+# specify a seed not equal to zero to create the same realization each time
+"seed" : 0,
+#"seed" : 12345678,
+"variogram" : {
+   #"type" : "sinxx",
+   "type" : "spherical",
+  # "type" : "exponential",
+  # "type" : "triangle",
+}
+   
+

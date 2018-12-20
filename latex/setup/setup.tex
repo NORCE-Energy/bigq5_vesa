@@ -1,0 +1,380 @@
+\documentclass[11pt,a4paper]{amsart}
+\usepackage[numbers]{natbib}
+\usepackage{stix}
+\usepackage{siunitx}
+\usepackage{booktabs}
+\usepackage{overpic}
+\usepackage{xspace}
+\input{../macros/macros.tex}
+\newenvironment{ovpc}[2]{\begin{overpic}[width=#1\textwidth]{../fig/#2}}{\end{overpic}}
+\usepackage{listings}
+\usepackage{xcolor}
+\colorlet{punct}{red!60!black}
+\definecolor{background}{HTML}{EEEEEE}
+\definecolor{delim}{RGB}{20,105,176}
+\colorlet{numb}{magenta!60!black}
+\lstdefinelanguage{json}{
+    basicstyle=\normalfont\ttfamily,
+    numbers=left,
+    numberstyle=\scriptsize,
+    stepnumber=1,
+    numbersep=8pt,
+    showstringspaces=false,
+    breaklines=true,
+    frame=lines,
+    backgroundcolor=\color{background},
+    literate=
+     *{0}{{{\color{numb}0}}}{1}
+      {1}{{{\color{numb}1}}}{1}
+      {2}{{{\color{numb}2}}}{1}
+      {3}{{{\color{numb}3}}}{1}
+      {4}{{{\color{numb}4}}}{1}
+      {5}{{{\color{numb}5}}}{1}
+      {6}{{{\color{numb}6}}}{1}
+      {7}{{{\color{numb}7}}}{1}
+      {8}{{{\color{numb}8}}}{1}
+      {9}{{{\color{numb}9}}}{1}
+      {:}{{{\color{punct}{:}}}}{1}
+      {,}{{{\color{punct}{,}}}}{1}
+      {\{}{{{\color{delim}{\{}}}}{1}
+      {\}}{{{\color{delim}{\}}}}}{1}
+      {[}{{{\color{delim}{[}}}}{1}
+      {]}{{{\color{delim}{]}}}}{1},
+}
+\begin{document}
+\title{Generation of top-surfaces for the VESA simulator}
+\date{\today}
+\maketitle
+\section{Introduction}
+\label{sec:introduction}
+A statistical model for generating top surfaces of a
+reservoir is described. The surfaces are created as realizations of a random field with
+a multivariate normal distribution with given mean, variance, and  
+variogram. The model can be applied as a component in a reservoir modeling
+procedure. The full reservoir model can then be applied in numerical
+simulation of \cotwo{}  
+storage to study e.g. how the top surface morphology of the
+reservoir can impact storage 
+capacity \cite{nil12:imp}. 
+
+First, a rectangular base-case of length $\domainLength$ and width
+$\domainWidth$ is constructed, see Figure \ref{fig:dom}.  
+\begin{figure}
+  \centering
+  \begin{ovpc}{.8}{domain/domain2}
+  \end{ovpc}
+  \caption{A rectangular domain with a curved top surface. The domain is tilted an
+  angle \tiltAngle{} from the horizontal. Her \domainLength{} is the length of
+  the domain,  \domainWidth{} is the width of the domain, and \domainHeight{} is
+  the height. }
+  \label{fig:dom}
+\end{figure}
+Typical values for the domain parameters are given in Table \ref{tab:1}. The
+reservoir is tilted in the west-east-direction with a corresponding elevation
+height $\domainAngleHeight$. Given this height and the length of the
+reservoir (see Table \ref{tab:1}), we can 
+compute the tilt angle \tiltAngle{} of the domain as
+\begin{align}
+  \label{eq:1}
+  \tiltAngle = \frac{180}{\pi}\sin^{-1}\frac{\domainAngleHeight}{\domainLength}
+  \approx 0.477\; ^\circ
+\end{align}
+\begin{table}
+  \setlength{\tabcolsep}{12pt}
+  \centering
+  \begin{tabular}{ccc}
+    \toprule
+    variable & value & unit  \\
+    \midrule
+    \domainAngleHeight{} & 0.5 & \unit{km} \\
+    \domainLength{} & 60 & \unit{km} \\
+    \domainWidth{} & 30 & \unit{km} \\
+    \domainHeight{} & 0.1 & \unit{km} \\
+    \bottomrule
+  \end{tabular}
+  \caption{Domain parameters}
+  \label{tab:1}
+\end{table}
+When simulating \cotwo{}
+storage, the injected \cotwo{} will be less dense than the resident
+fluid. Hence, it will move upwards against
+the top of the formation. When trapped by the top surface morphology it
+will spread horizontally along the short axis until the trap is saturated
+with \cotwo{}. To prevent too much horizontal spreading (i.e \cotwo{} reaching
+the domain boundary), the top surface is made slightly curved. 
+
+The curvature
+is created by fitting the surface to the shape of a cylinder with a diameter
+that is larger than the lateral dimension of the reservoir. See Figure \ref{fig:fcyl}.
+\begin{figure}
+  \centering
+  \begin{ovpc}{.5}{domain/fitcyl}
+  \end{ovpc}
+  \caption{Cross section of a cylinder in the $xz$-plane. We compute the
+    coordinate of the center of the cylinder \domainCylCenter{}, given its radius
+    \domainCylRadius{} and the
+    reservoir top surface 
+    lateral dimension (given by the points $\domainXA$ and $\domainXB$). Note
+    that the points \domainXA{} and \domainXB{} are constrained to the
+    boundary of the cylinder. }
+  \label{fig:fcyl}
+\end{figure}
+We define the curvature $0 \leq \domainCurvature \leq 1$ of the top surface as
+\begin{align}
+  \label{eq:2}
+  \domainCurvature = \frac{\|\domainXB - \domainXA \|}{2\domainCylRadius},
+  \qquad 2\domainCylRadius \ge \|\domainXB - \domainXA \|.
+\end{align}
+The largest curvature occur when the diameter of the cylinder coincides with
+the lateral dimension of the reservoir, i.e.
+$2\domainCylRadius = \|\domainXB - \domainXA \|$.
+
+\subsection{Adding stochastic features to the top surface}
+\label{sec:adding-stoch-feat}
+After having created a top surfaces with a given tilt and curvature as
+described in the previous section, we add some more (small-scale) stochastic
+features to emulate
+% morphological features like
+offshore sand ridges \cite{nil12:imp}.
+
+As a starting point for the stochastic model,
+we assume that the depth (i.e. the negative $z$-coordinate assuming
+$z=0$ corresponds to sea level) of the top surface of the reservoir is
+given as
+\begin{align}
+  \label{eq:17}
+  \heightTop(\boldsymbol{x}) = \heightTopBase(\boldsymbol{x})
+  + \heightRandomReal(\boldsymbol{x})
+\end{align}
+here $\boldsymbol{x} = (x, y)$ is a point in the $xy$-plane,
+$\heightTopBase(\boldsymbol{x})$ is the top surface as described in Section
+\ref{sec:introduction}, and
+where $\heightRandomReal(\boldsymbol{x})$ is a realization of a random field
+$\heightRandom(\boldsymbol{x})$ with zero mean and a
+standard deviation that is much smaller than the reservoir thickness.
+%$\reservoirThickness(\boldsymbol{x})$.
+%Also, note the bottom surface of the reservoir is now given by
+%\begin{align}
+%  \label{eq:8}
+%  \heightBottom(\boldsymbol{x}) = \heightTop(\boldsymbol{x})
+%  - \reservoirThickness(\boldsymbol{x})
+%\end{align}
+Hence, the purpose of $\heightRandom(\boldsymbol{x})$
+is to add some stochastic topographic features to the top surfaces.
+
+We choose to let $\heightRandom(\boldsymbol{x})$ model 
+offshore sand ridges \cite{nil12:imp} with a given amplitude, width, and
+length. These features can be modelled with a variogram with different ranges
+in $x$- and $y$-direction, see the documentation file
+\docVariogram{} for more information.
+
+\section{Python script}
+A Python script has been developed to generate a VESA
+\cite{gas09:ver} input file for the model described in Section \ref{sec:introduction}.
+Currently, only a single VESA input files is generated:
+\begin{itemize}
+\item \vesaInFile{REFHT} : The (negative) $z$-coordinate of each grid point of
+  the generated top surface, i.e. $\heightTop$ as defined in Section
+  \ref{sec:adding-stoch-feat}. 
+\end{itemize}
+\subsection{Input parameter file}
+The input parameters to the Python script is given by a JSON input 
+file. Here is a sample template file:
+\begin{lstlisting}[language=json,firstnumber=1]
+"domain" : {
+   "curvature" : 0.005,
+   "tilt_angle" : 0.477
+},
+"num_std_dev_confidence_delta_h" : 3,
+"nx" : 300,
+"ny" : 600,
+"output_dir" : ".",
+"output_thickness" : true,
+"range_x" : 10000,
+"range_y" : 80000,
+"requested_delta_h" : 50,
+"reservoir_depth" : 1000,
+"reservoir_thickness" : 100,
+"reservoir_xy_size" : [60000, 30000],
+"seed" : 0,
+"variogram" : {
+   "type" : "exponential",
+},
+\end{lstlisting}
+Here,
+\begin{itemize}
+\item \jsonParam{domain['curvature']} is the curvature of the domain according
+  to \eqref{eq:2}. 
+\item \jsonParam{domain['tilt\_angle']} is the domain tilt angle according
+  to \eqref{eq:1}. 
+\item \jsonParam{requested\_delta\_h} is the desired amplitude
+  in the stochastic field $\heightRandom(\boldsymbol{x})$, see Section \ref{sec:adding-stoch-feat}.
+The probability that a sampled value of $\heightRandom(\boldsymbol{x})$,  will
+actually lie in the interval 
+  $[ - \jsonParam{requested\_delta\_h}, \jsonParam{requested\_delta\_h} ]$
+  is determined by the parameter 
+  $N_{\stdev} := \text{\jsonParam{num\_std\_dev\_confidence\_delta\_h}}$. 
+  The standard deviation \stdev{} of $\heightRandom(\boldsymbol{x})$ is set such that
+  \begin{align}
+    \label{eq:3}
+    \stdev = \frac{\jsonParam{requested\_delta\_h}}{N_{\stdev}}
+  \end{align}
+  Hence, if for example
+  $N_{\sigma}$ is set to 3, the probability that a sample from $\heightRandom$
+  will be within the 
+  interval $[ - \jsonParam{requested\_delta\_h}, \jsonParam{requested\_delta\_h} ]$
+  is 0.9973 according to
+  cumulative distribution function of the normal distribution, see
+  \cite{joh10:sta}.  
+
+  \item  The parameter \jsonParam{reservoir\_xy\_size} is an array of two
+    elements where the first is the $x$-size (the length) of the reservoir, and the
+    second specifies the $y$-size (the width) of the reservoir.
+
+  \item The parameters \jsonParam{nx} and  \jsonParam{ny} specifies the number
+    of grid cells in the $x$- and $y$-directions, respectively. The size of a
+    grid cell $(\Delta x, \Delta y)$ is then
+    \begin{align*}
+      \Delta x = (\jsonParam{x\_max} - \jsonParam{x\_min})/ \jsonParam{nx}\\
+      \Delta y = (\jsonParam{y\_max} - \jsonParam{y\_min})/ \jsonParam{ny}
+    \end{align*}
+    and the generated surface heights corresponds to the grid nodes, that is:
+    to the cell centers (not the grid nodes/vertices).
+
+\item \jsonParam{output\_dir} contains the directory name where the output
+  files will be written. The default value (if the parameter is not given) is
+  the current directory, ``\hltexttt{.}'' (i.e. a string consisting of a the single
+  dot character). 
+
+\item \jsonParam{output\_thickness} whether to output
+the VESA input file \vesaInFile{H} containing the thickness of the reservoir at each
+  grid point.
+  The default value (if the parameter is not given) is not to output this
+  file.
+
+\item \jsonParam{range\_x} and \jsonParam{range\_y} are the range in the $x$-
+  and $y$-direction of the variogram model, see the documentation file
+  \docVariogram{} for more information.
+
+\item \jsonParam{reservoir\_depth} specifies the depth (below sea level) of
+  the lowest point of 
+  the bottom surface. This number should be a positive number, although its
+  $z$-coordinate will be its negative value.
+
+\item \jsonParam{reservoir\_thickness} the thickness of the reservoir. This
+  value is used to generate the output file \vesaInFile{H}.
+
+\item \jsonParam{seed} The seed for the pseudo-random generator. If the value
+  is not set (omitting the parameter from the file), or if 
+  $\jsonParam{seed} = 0$, then the seed will not be set, resulting in a different
+  realization for each run (according to the documentation for
+  \hltexttt{numpy.random.RandomState}). Note: For debugging purposes, one can set
+  \jsonParam{seed} to an integer not equal zero such that the same realization
+  will be produced for consecutive runs.
+
+\item \jsonParam{variogram['type']} the type of variogram to use when
+  generating the covariance matrix, see the documentation file
+  \docVariogram{} for more information.
+
+\end{itemize}
+\subsection{A sample case}
+In this case we consider the following input parameters
+\begin{lstlisting}[language=json,firstnumber=1]
+"domain" : {
+   "curvature" : 0.005,
+   "tilt_angle" : 0.477
+},
+"num_std_dev_confidence_delta_h" : 3,
+"nx" : 200,
+"ny" : 125,
+"range_x" : 5000,
+"range_y" : 40000,
+"requested_delta_h" : 50,
+"reservoir_depth" : 1000,
+"reservoir_thickness" : 100,
+"variogram" : {
+   "type" : "spherical",
+},
+"reservoir_xy_size" : [50000, 25000]
+\end{lstlisting}
+\subsubsection{Curvature}
+We note that the domain width \domainWidth{} is set to 25000 meters according
+parameter \jsonParam{reservoir\_xy\_size}. Now the domain curvature
+\domainCurvature{} is set to 0.005 according to
+\jsonParam{domain['curvature']}. We can now calculate the radius of the
+cylinder according to Equation \eqref{eq:2}:
+\begin{align}
+  \label{eq:5}
+  \domainCylRadius = \frac{\domainWidth}{2\domainCurvature} = 
+   \frac{50000}{2\times 0.005} = 5,000,000
+\end{align}
+Refer to Figure \ref{fig:fcyl}, the line segment from $\domainXA$ to
+$\domainXB$ and the radius line from the 
+center of the cylinder to $\domainXB$ creates and angle $\theta$ that is given
+by
+\begin{align}
+  \label{eq:6}
+  \theta = \cos^{-1} \frac{\|\domainXB - \domainXA\|}{2r} = \cos^{-1}
+  \domainCurvature = \cos^{-1} 0.005 \approx 89.71^{\circ}
+\end{align}
+The distance from the center of the cylinder to the line segment spanned by
+$\domainXA$ and $\domainXB$ is now given by
+\begin{align}
+  \label{eq:7}
+  h_0 = \domainCylRadius \sin \theta \approx 4999937.5,
+\end{align}
+Hence the maximum added height due to the curvature (that is: the maximum
+height is attained at the midpoint
+between $\domainXA$ and $\domainXB$) is
+\begin{align}
+  \label{eq:9}
+  \Delta h_{\text{max}} = \domainCylRadius - h_0 = 5,000,000 - 4,999,937.5 =
+  62.5 \;\text{m}.
+\end{align}
+\subsubsection{Tilt}
+We will compute the domain height displacement \domainAngleHeight{} in
+ Figure \ref{fig:dom}. From \jsonParam{reservoir\_xy\_size} we see that the
+ domain length \domainLength{} is 50,000 meters. From
+ \jsonParam{domain['tilt\_angle']} we see that the tilt angle \tiltAngle{} is
+ 0.477 degrees. We now have 
+\begin{align}
+  \label{eq:4}
+  \domainAngleHeight = \domainLength \sin
+  \left(
+  \frac{\pi\tiltAngle}{180}
+  \right) = 50000 \times \sin 
+  \left(
+  \frac{\pi \times 0.477}{180}
+  \right) \approx 416.3 \; \text{m} 
+\end{align}
+
+%\begin{figure}
+%  \centering
+%  \begin{ovpc}{.8}{vesa/co2sat/5_40.png}
+%  \end{ovpc}
+%  \caption{a}
+%  \label{fig:co2sat}
+%\end{figure}
+\bibliographystyle{plain}
+\begin{thebibliography}{1}
+
+\bibitem{gas09:ver}
+S.E. Gasda, J.M. Nordbotten, and M.A. Celia.
+\newblock Vertical equilibrium with sub-scale analytical methods for geological
+  {CO2} sequestration.
+\newblock {\em Comput. Geosci.}, 13(4):469--481, 2009.
+
+\bibitem{joh10:sta}
+R.A. Johnson and G.K. Bhattacharyya.
+\newblock {\em Statistics. Principles and methods}.
+\newblock John Wiley \& Sons, 6th edition, 2010.
+
+\bibitem{nil12:imp}
+H.M. Nilsen, A.R. Syversveen, K.-A. Lie, J.~Tveranger, and J.M. Nordbotten.
+\newblock Impact of top-surface morphology on {CO2} storage capacity.
+\newblock {\em International Journal of Greenhouse Gas Control}, 11:221--235,
+  2012.
+
+\end{thebibliography}
+
+\end{document}
