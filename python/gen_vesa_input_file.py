@@ -25,7 +25,7 @@ The "fixed" parameters are as follows:
 - "variogram.type" : "spherical"
 - "reservoir_xy_size" : [50000, 25000]
 
-The remaining five parameters are "dynamic",  i.e. given on the command line.
+The remaining three parameters are "dynamic",  i.e. given on the command line.
 They determine the shape of the stochastically 
 ridge-like features [1] that are added to the top surface, see the documentation
 file docs/main.pdf for more information. The parameters are:
