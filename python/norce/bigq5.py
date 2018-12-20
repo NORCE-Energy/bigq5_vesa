@@ -66,19 +66,6 @@ class Realization:
         H, xx, yy = self.remove_artifacts_from_solution(H, xx, yy)
         return H, xx, yy
 
-        
-    def write_params(self):
-        nx, ny = self.H.shape 
-        data = {
-            'nx': nx,
-            'ny': ny,
-            'dx': self.dx,
-            'dy': self.dy
-        }
-        fn = os.path.join(self.output_dir, 'params.json')
-        with open(fn, 'w') as fp:
-            json.dump(data, fp)
-
     def write_reservoir_thickness(self):
         if self.output_thickness:
             fn = 'H.IN'
