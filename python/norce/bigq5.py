@@ -17,9 +17,9 @@ def read_json_comment(fn):
     
 
 class Realization:
-    """ Generates a realization of the top surface from a random field 
-    with a normal with mean, variance, and covariance in accordance with
-    the input parameters given in the dict 'cfg'.
+    """ Generates a realization of the top surface from a stationary random field 
+    with a normal distribution with mean, variance, and covariance in
+    accordance with the input parameters given in the dict 'cfg'.
     """
     def __init__(self, cfg):
         self.cfg = cfg
