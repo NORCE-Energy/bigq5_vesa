@@ -6,5 +6,5 @@
 *.pdf
 *.fdb_latexmk
 *.fls
-/REFHT.IN
+/vesa_case_dir/REFHT.IN
 /python/norce/__pycache__/*
