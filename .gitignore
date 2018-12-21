@@ -6,3 +6,5 @@
 *.pdf
 *.fdb_latexmk
 *.fls
+/REFHT.IN
+/python/norce/__pycache__/*
