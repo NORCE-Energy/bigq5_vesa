@@ -1,9 +1,17 @@
 .PHONY: all clean docs
 
+SHELL:=/bin/bash
+INPUT_PARAMS_FILE:=input_params.json
+
 latex_generated_files=*.aux *.bbl *.blg *.log *.pdf *.fdb_latexmk *.fls
 
 all:
-	echo "All"
+	@if [[ ! -e python/$(INPUT_PARAMS_FILE) ]] ; then \
+	   echo "Installing python/$(INPUT_PARAMS_FILE)" ;\
+	   cp templates/$(INPUT_PARAMS_FILE) python/ ;\
+	else\
+	   echo "File python/$(INPUT_PARAMS_FILE) already exists. Will not overwrite." ;\
+	fi
 
 docs:
 	cd latex/main; latexmk -pdf -pdflatex="pdflatex -interaction=nonstopmode" main.tex

@@ -22,7 +22,7 @@ the PDF documentation, run
 $ make docs
 ```
 
-it requires that `latex`, `bibtex` and `latexmk` are installed.
+it requires that `latex` and `latexmk` are installed.
 
 VESA input files (except for the top surface, since it will be generated
 by the script) for a 200x125 size grid of a 50km x 25km domain with CO2 injection into an
@@ -60,6 +60,15 @@ each model and monitor the change in breakthrough curve for CO2. Hence, we
 will get a mapping between the parameters and the resulting
 breakthrough curve that can be use as training data in a machine
 learning algorithm.
+
+## INSTALLATION
+
+To get started, you should copy the template `input_param.json` from the
+`templates` directory to the `python` directory. This can be done by
+running:
+```
+$ make
+```
 
 # References
 
