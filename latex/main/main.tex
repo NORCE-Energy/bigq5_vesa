@@ -119,7 +119,7 @@ $ make
 The Python scripts and modules are located in the folder \hltexttt{python}:
 \begin{itemize}
 \item \mainScriptKJ{} : This is the main script to be used as a component in the
-  Machine learning algorithm.
+  machine learning algorithm.
 \item The part of the code that generates a single realization has been
   separated out into a Python module \pythonModule{norce.bigq5}. The file of
   this module is located in folder \hltexttt{python/norce/bigq5.py}.
@@ -136,8 +136,8 @@ $ gen_vesa_input_file.py <range_x> <range_y> <requested_delta_h>
 \end{lstlisting}
 where the leading \hltexttt{\$} indicates a Shell prompt, and
 \begin{itemize}
-\item \rangeX{}, is $x$-range of the variogram,
-\item \rangeY{}, is $y$-range of the variogram,
+\item \rangeX{}, is the $x$-range of the variogram,
+\item \rangeY{}, is the $y$-range of the variogram,
 \item \paramAmp{}, is the requested height variation (amplitude) of the ridges,
 \end{itemize}
 See the documentation file \docSetup{} for more information about the
@@ -150,7 +150,8 @@ $ gen_vesa_input_file.py 5000 40000 50
 will generate a realization from the stochastic field. The covariance of
 the field will have a range of 5000 in the $x$-direction and a range of 40000 in
 the $y$-direction. The amplitude of the covariance function is set such that
-we have high confidence (the level of confidence can be set, see discussion
+we have high confidence (the level of confidence is currently set to 99.7\%,
+but this can be changed in the parameter file, see discussion 
 below) that a sample point drawn from the field will lie in the interval $[-50, 50]$.
 
 \subsection{Fixed parameters}
@@ -194,7 +195,7 @@ Here,
     \sigma = \frac{\paramAmp}{N_{\stdev}}.
   \end{align*}
   For example if $N_{\stdev} = 3$, then according to the empirical
-rule \cite{wik18:ers}, there will 99.7\% confidence level that a sampled value
+rule \cite{wik18:ers}, there will be a 99.7\% probability that a sampled value
 will lie in the interval $[-\paramAmp, \paramAmp]$.
 
 \item  The parameter \jsonParam{reservoir\_xy\_size} is an array of two
@@ -209,8 +210,8 @@ will lie in the interval $[-\paramAmp, \paramAmp]$.
       \Delta x = (\jsonParam{x\_max} - \jsonParam{x\_min})/ \jsonParam{nx}\\
       \Delta y = (\jsonParam{y\_max} - \jsonParam{y\_min})/ \jsonParam{ny}
     \end{align*}
-    and the generated surface heights corresponds to the grid nodes, that is:
-    to the cell centers (not the grid nodes/vertices).
+    and the generated surface heights corresponds to the grid cell centers
+    (not the grid vertices). 
 
 \item \jsonParam{output\_dir} contains the directory name where the output
   file \vesaInFile{REFHT} (a VESA input file) will be written. The default
