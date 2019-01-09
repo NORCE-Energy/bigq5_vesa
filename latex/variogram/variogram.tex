@@ -205,7 +205,12 @@ The model is given by \cite{chi12:geo}
   \label{eq:11}
   \covarianceFuncH_2(h) =
   \begin{cases}
-    \variance \left(1 - \frac{3h}{2\range} - \frac{h^3}{2\range^3}\right), &h<\range\\
+    \variance
+    \left(
+      1 - \left(
+        \frac{3h}{2\range} - \frac{h^3}{2\range^3}
+      \right)
+    \right), &h<\range\\
     0, & h\geq\range
   \end{cases}
 \end{align}
