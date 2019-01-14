@@ -87,8 +87,6 @@ class Realization:
         y_max = self.reservoir_xy_size[1]
         dx = (x_max - x_min)/self.nx
         dy = (y_max - y_min)/self.ny
-        self.nx = self.nx + 1
-        self.ny = self.ny + 1
         x_min = x_min - dx
         y_min = y_min - dy
         x = np.linspace(x_min + dx/2, x_max - dx/2, self.nx)
