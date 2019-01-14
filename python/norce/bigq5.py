@@ -41,7 +41,7 @@ class Realization:
         self.L = L
 
     def compute_covariance_matrix(self):
-        [xx, yy] = np.meshgrid(self.x, self.y)
+        [xx, yy] = np.meshgrid(self.x, self.y, indexing='ij')
         self.xx = xx
         self.yy = yy
         cov = self.gen_covariance(xx, yy)
@@ -61,9 +61,8 @@ class Realization:
         See docs/cholesky.pdf for more information.
         """
         Z = np.random.standard_normal((self.num_cells, 1))
-        real = self.h_mean + np.dot(L.T, Z)
+        real = self.h_mean + np.dot(L, Z)
         H = real.reshape((self.nx, self.ny)).T
-        H, xx, yy = self.remove_artifacts_from_solution(H, xx, yy)
         return H, xx, yy
 
     def write_reservoir_thickness(self):
@@ -82,17 +81,6 @@ class Realization:
         np.savetxt(fn_path, self.Z_top.flatten())
        
     def gen_x_y_vectors(self):
-        """ Due to a bug (?), unexpected large values can be observed in the
-        first row and first column of the Cholesky matrix, and hence in 
-        the corresponding height realization matrix.
-        TODO: Come back to this problem later, currently we do a quick fix
-        and simply remove those elememts from the realization.
-        See method remove_artifacts_from_solution()
-        """
-        self.remove_artifacts = {
-            'delete_first_row': True,
-            'delete_first_column': True
-        }
         x_min = 0
         x_max = self.reservoir_xy_size[0]
         y_min = 0
@@ -115,26 +103,11 @@ class Realization:
         self.y_max = y_max
            
            
-    def remove_artifacts_from_solution(self, H, x, y):
-        """ Quick fix for strange problem with cholesky factorization.
-        See docs/cholesky.pdf for further information.
-        """
-        if self.remove_artifacts['delete_first_row']:
-            x = x[1:, :]
-            y = y[1:, :]
-            H = H[1:, :]
-        if self.remove_artifacts['delete_first_column']:
-            x = x[:, 1:]
-            y = y[:, 1:]
-            H = H[:, 1:]
-        return H, x, y
-           
-           
     def add_domain_curvature(self, H, yy):
         """ Adds a curvature to H according to its corresponding y-coordinate.
         See docs/setup.pdf for further information
         """
-        y = yy[:, 0]
+        y = yy[0, :]
         L = (self.y_max - self.y_min)/2
         curvature = self.domain['curvature']
         if curvature < 0 or curvature > 1:
@@ -157,7 +130,7 @@ class Realization:
         """ adds a tilt by increasing height values H according to
         their x position along the x-axis and the tilt angle
         """
-        x = xx[0,:]
+        x = xx[:, 0]
         tilt_factor = np.tan((self.domain['tilt_angle']/180)*np.pi)
         H = H + tilt_factor*(x-x[0])
         return H
