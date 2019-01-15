@@ -123,9 +123,16 @@ The Python scripts and modules are located in the folder \hltexttt{python}:
 \item The part of the code that generates a single realization has been
   separated out into a Python module \pythonModule{norce.bigq5}. The file of
   this module is located in folder \hltexttt{python/norce/bigq5.py}.
-\item \jsonInputParamFile{} : Some parameters to the main script
+\item \jsonInputParamFile{} : Some parameters to the main script\\
   \mainScriptKJ{} are given at the command line, and the rest of the
-  parameters are given in the JSON file \jsonInputParamFile{}, see below.
+  parameters are given in the JSON file \jsonInputParamFile{}, see
+  below. Note: \jsonInputParamFile{} is not present in the \hltexttt{python} folder
+  initially. This is because this file is to be modified by user, but such
+  modifications should usually not be saved to the Git repository. Instead a template
+  file is located at \hltexttt{templates/input\_params.json}. You should copy
+  this file to the \hltexttt{python} folder, or alternatively
+  run \shellCommand{make} from the top directory, which will also copy the file
+  \hltexttt{templates/input\_params.json} to the \hltexttt{python} folder.
 \end{itemize}
 
 \section{Main script}
