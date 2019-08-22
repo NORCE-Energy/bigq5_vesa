@@ -6,7 +6,10 @@
 /latex/**/*.fdb_latexmk
 /latex/**/*.fls
 /latex/**/*.log
-/latex/**/*.pdf
+/latex/cholesky/cholesky.pdf
+/latex/main/main.pdf
+/latex/setup/setup.pdf
+/latex/variogram/setup.pdf
 /python/input_params.json
 /python/build/
 /python/dist/
